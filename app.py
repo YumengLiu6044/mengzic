@@ -2,7 +2,15 @@ import dotenv
 import os
 import base64
 from requests import post, get
-from pprint import pprint
+import fastapi
+from firebase_admin import credentials
+import firebase_admin
+from request_models import (
+    AuthRequest
+)
+
+
+app = fastapi.FastAPI()
 
 
 # Load keys
@@ -11,6 +19,11 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 AUTH_URL = os.getenv('AUTH_URL')
 SEARCH_URL = os.getenv('SEARCH_URL')
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello, welcome to Yumeng's app"}
 
 
 # Gets Spotify token
@@ -64,7 +77,16 @@ def _search_by_song(token: str, song_name: str):
     return result.json()
 
 
+def _init_firebase():
+    print("Initializing firebase")
+    cred = credentials.ApplicationDefault()
+    firebase_admin.initialize_app(cred)
+    print("Firebase initialized")
+
+
+def _init_spotify_api():
+    ...
+
+
 if __name__ == '__main__':
-    _token = _get_token()
-    _song_data = _search_by_song(_token, "Kid A")
-    pprint(_song_data["tracks"]["items"])
+    _init_firebase()

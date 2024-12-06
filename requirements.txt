@@ -1,2 +1,4 @@
 python-env
 requests
+fastapi[all]
+firebase-admin
