@@ -1,4 +1,4 @@
-FROM python:3.13
+FROM python:3.13-slim
 LABEL authors="yumengliu"
 
 # Create app directory
@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Run app
 COPY . /app
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "utils.app:app", "--host", "0.0.0.0", "--port", "8080"]
