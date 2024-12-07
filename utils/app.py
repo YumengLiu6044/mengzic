@@ -22,6 +22,7 @@ else:
     sys.exit("Environment variables not found")
 
 
+# App startup
 app = fastapi.FastAPI()
 
 
@@ -42,11 +43,11 @@ def _get_token() -> str:
         'Content-Type': 'application/x-www-form-urlencoded'
     }
     data = {
-        "grant_type": "client_credentials"
+        "grant_type": "refresh_token"
     }
 
     result = post(url, data=data, headers=headers)
-    return result.json()['access_token']
+    return result.json()
 
 
 def _get_auth_header(token: str) -> dict:
@@ -81,3 +82,6 @@ def _search_by_song(token: str, song_name: str):
     return result.json()
 
 
+if __name__ == "__main__":
+
+    print(_get_token())
