@@ -5,9 +5,6 @@ from requests import post, get
 import fastapi
 from firebase_admin import credentials
 import firebase_admin
-from request_models import (
-    AuthRequest
-)
 
 # Load Global Variables
 CLIENT_ID = os.getenv('CLIENT_ID')
