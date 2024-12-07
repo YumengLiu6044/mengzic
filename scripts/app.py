@@ -1,6 +1,6 @@
-import dotenv
 import os
 import base64
+import sys
 from requests import post, get
 import fastapi
 from firebase_admin import credentials
@@ -9,16 +9,18 @@ from request_models import (
     AuthRequest
 )
 
-
-app = fastapi.FastAPI()
-
-
-# Load keys
-dotenv.load()
+# Load Global Variables
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-AUTH_URL = os.getenv('AUTH_URL')
-SEARCH_URL = os.getenv('SEARCH_URL')
+AUTH_URL = "https://accounts.spotify.com/api/token"
+SEARCH_URL = "https://api.spotify.com/v1/search"
+
+if CLIENT_ID and CLIENT_SECRET:
+    print("Env loading successful")
+else:
+    sys.exit("Environment variables not found")
+
+app = fastapi.FastAPI()
 
 
 @app.get("/")
