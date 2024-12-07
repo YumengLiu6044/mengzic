@@ -39,7 +39,7 @@ def regenerate_credential_on_fail(func):
         result = func(*args, **kwargs)
         if "error" in result and result["error"]["status"] == 401:
             credential.get_access_token()
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
 
         return result
 
