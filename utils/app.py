@@ -1,8 +1,9 @@
 import os
-import base64
 import sys
-from requests import post, get
+from requests import get
 import fastapi
+from pprint import pprint
+from util_classes import CredentialManager
 
 
 def _log(info: str):
@@ -13,7 +14,7 @@ def _log(info: str):
 # Load Global Variables
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-AUTH_URL = "https://accounts.spotify.com/api/token"
+
 SEARCH_URL = "https://api.spotify.com/v1/search"
 
 if CLIENT_ID and CLIENT_SECRET:
@@ -21,9 +22,11 @@ if CLIENT_ID and CLIENT_SECRET:
 else:
     sys.exit("Environment variables not found")
 
+credential = CredentialManager(CLIENT_ID, CLIENT_SECRET)
 
 # App startup
 app = fastapi.FastAPI()
+_log("App startup successful")
 
 
 @app.get("/")
@@ -31,36 +34,26 @@ async def root():
     return {"message": "Hello, welcome to Yumeng's app"}
 
 
-# Gets Spotify token
-def _get_token() -> str:
-    auth_str = CLIENT_ID + ':' + CLIENT_SECRET
-    auth_data = auth_str.encode("utf-8")
-    auth_base64 = str(base64.b64encode(auth_data), encoding='utf-8')
+def regenerate_credential_on_fail(func):
+    def execute(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if "error" in result and result["error"]["status"] == 401:
+            credential.get_access_token()
+            return func(*args, **kwargs)
 
-    url = AUTH_URL
-    headers = {
-        'Authorization': 'Basic ' + auth_base64,
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-    data = {
-        "grant_type": "refresh_token"
-    }
+        return result
 
-    result = post(url, data=data, headers=headers)
-    return result.json()
+    return execute
 
 
-def _get_auth_header(token: str) -> dict:
-    return {"Authorization": f"Bearer {token}"}
-
-
-def _search_by_artist(token: str, artist_name: str):
+@regenerate_credential_on_fail
+def _search_by_album(album_name: str, limit: int = 10):
     url = SEARCH_URL
-    headers = _get_auth_header(token)
+    headers = credential.get_auth_header()
     params = {
-        "q": artist_name,
-        "type": "artist",
-        "limit": 1,
+        "q": album_name,
+        "type": "album",
+        "limit": limit,
         "market": "US"
     }
 
@@ -68,20 +61,31 @@ def _search_by_artist(token: str, artist_name: str):
     return result.json()
 
 
-def _search_by_song(token: str, song_name: str):
+@regenerate_credential_on_fail
+def _search_by_artist(artist_name: str, limit=10):
     url = SEARCH_URL
-    headers = _get_auth_header(token)
+    headers = credential.get_auth_header()
     params = {
-        "q": song_name,
-        "type": "track",
-        "limit": "1",
-        "include_external": "audio"
+        "q": artist_name,
+        "type": "artist",
+        "limit": limit,
+        "market": "US"
     }
 
     result = get(url, headers=headers, params=params)
     return result.json()
 
 
-if __name__ == "__main__":
+@regenerate_credential_on_fail
+def _search_by_song(song_name: str, limit=10):
+    url = SEARCH_URL
+    headers = credential.get_auth_header()
+    params = {
+        "q": song_name,
+        "type": "track",
+        "limit": limit,
+        "include_external": "audio"
+    }
 
-    print(_get_token())
+    result = get(url, headers=headers, params=params)
+    return result.json()
