@@ -3,8 +3,12 @@ import base64
 import sys
 from requests import post, get
 import fastapi
-from firebase_admin import credentials
-import firebase_admin
+
+
+def _log(info: str):
+    print("Mengzic: " + info)
+    return
+
 
 # Load Global Variables
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -13,9 +17,10 @@ AUTH_URL = "https://accounts.spotify.com/api/token"
 SEARCH_URL = "https://api.spotify.com/v1/search"
 
 if CLIENT_ID and CLIENT_SECRET:
-    print("Env loading successful")
+    _log("Successfully loaded credentials")
 else:
     sys.exit("Environment variables not found")
+
 
 app = fastapi.FastAPI()
 
@@ -76,16 +81,3 @@ def _search_by_song(token: str, song_name: str):
     return result.json()
 
 
-def _init_firebase():
-    print("Initializing firebase")
-    cred = credentials.ApplicationDefault()
-    firebase_admin.initialize_app(cred)
-    print("Firebase initialized")
-
-
-def _init_spotify_api():
-    ...
-
-
-if __name__ == '__main__':
-    _init_firebase()
