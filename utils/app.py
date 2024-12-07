@@ -47,6 +47,21 @@ def regenerate_credential_on_fail(func):
 
 
 @regenerate_credential_on_fail
+def _general_search(album_name: str, limit: int = 10):
+    url = SEARCH_URL
+    headers = credential.get_auth_header()
+    params = {
+        "q": album_name,
+        "type": "album,track,artist",
+        "limit": limit,
+        "market": "US"
+    }
+
+    result = get(url, headers=headers, params=params)
+    return result.json()
+
+
+@regenerate_credential_on_fail
 def _search_by_album(album_name: str, limit: int = 10):
     url = SEARCH_URL
     headers = credential.get_auth_header()

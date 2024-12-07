@@ -24,6 +24,16 @@ class MyTestCase(unittest.TestCase):
         assert "error" not in result
         self.assertEqual(len(result["artists"]["items"]), limit)
 
+    def test_valid_general_search(self):
+        limit = 10
+
+        result = app._general_search("John", limit=limit)
+        assert "error" not in result
+
+        self.assertEqual(len(result["artists"]["items"]), limit)
+        self.assertEqual(len(result["tracks"]["items"]), limit)
+        self.assertEqual(len(result["albums"]["items"]), limit)
+
     def test_regenerate_credentials(self):
         app.credential.access_token = "notvalidhahaha"
         limit = 10
